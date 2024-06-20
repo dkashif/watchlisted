@@ -69,14 +69,25 @@ def main():
 
 def recommend_movies(show_name: str, similarity_matrix: csr_matrix, data: pd.DataFrame, n: int = 5) -> List[str]:
     """Recommend similar shows based on the input show name."""
+    # Convert the input show name to lowercase
+    show_name_lower = show_name.lower()
+
+    # Create a lowercase version of all show names in the dataset
+    data['name_lower'] = data['name'].str.lower()
+
     try:
-        index = data[data['name'] == show_name].index[0]
+        # Find the index of the show, ignoring case
+        index = data[data['name_lower'] == show_name_lower].index[0]
+
         distances = sorted(list(enumerate(similarity_matrix[index].toarray().flatten())),
                            reverse=True, key=lambda x: x[1])
         recommended_shows = [data.iloc[i[0]]['name'] for i in distances[1:n + 1]]
         return recommended_shows
     except IndexError:
-        return f"Show '{show_name}' not found in the dataset."
+        return []
+    finally:
+        # Remove the temporary column we created
+        data.drop('name_lower', axis=1, inplace=True)
 
 
 def clean_text(text: str) -> str:
