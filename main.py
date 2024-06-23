@@ -53,32 +53,27 @@ def main():
     tfidf = TfidfVectorizer(max_features=MAX_FEATURES, stop_words='english')
     tfidf_matrix = tfidf.fit_transform(training_data['clean_features'])
     similarity = cosine_similarity(tfidf_matrix, dense_output=False)
-    # Test case:
+
     while True:
         show_to_recommend = input("Enter a show to get similar recommendations (or 'quit' to exit): ")
         if show_to_recommend.lower() == 'quit':
             break
         recommendations = recommend_movies(show_to_recommend, similarity, training_data)
-        if isinstance(recommendations, list):
+        if recommendations:
             print("Recommendations:")
             for i, show in enumerate(recommendations, 1):
                 print(f"{i}. {show}")
         else:
-            print(recommendations)
+            print("Show not found or no recommendations available.")
 
 
 def recommend_movies(show_name: str, similarity_matrix: csr_matrix, data: pd.DataFrame, n: int = 5) -> List[str]:
     """Recommend similar shows based on the input show name."""
-    # Convert the input show name to lowercase
     show_name_lower = show_name.lower()
-
-    # Create a lowercase version of all show names in the dataset
     data['name_lower'] = data['name'].str.lower()
 
     try:
-        # Find the index of the show, ignoring case
         index = data[data['name_lower'] == show_name_lower].index[0]
-
         distances = sorted(list(enumerate(similarity_matrix[index].toarray().flatten())),
                            reverse=True, key=lambda x: x[1])
         recommended_shows = [data.iloc[i[0]]['name'] for i in distances[1:n + 1]]
@@ -86,7 +81,6 @@ def recommend_movies(show_name: str, similarity_matrix: csr_matrix, data: pd.Dat
     except IndexError:
         return []
     finally:
-        # Remove the temporary column we created
         data.drop('name_lower', axis=1, inplace=True)
 
 
