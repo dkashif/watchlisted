@@ -85,7 +85,7 @@ def recommend_movies(show_name: str, similarity_matrix: csr_matrix, data: pd.Dat
 
 
 def clean_text(text: str) -> str:
-    """Clean and preprocess the text data."""
+    """This function cleans the text data for processing."""
     if not isinstance(text, str):
         return ''
     text = text.lower()
